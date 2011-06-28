@@ -55,6 +55,8 @@ class Lexer
     if pos < str.length then
       toks.push(StringToken.new(str[pos .. str.length]))
     end
+
+    return toks
   end
 
 end

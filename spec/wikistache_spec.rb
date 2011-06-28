@@ -81,8 +81,8 @@ describe "Wikistache" do
   end
 
   it "should parse a string without data" do
-    str = "This is a [test]."
-    Wikistache.parse(str).should == "This is a Unknown."
+    str = "This is a [test]"
+    Wikistache.parse(str).should == "This is a Unknown"
   end
 
   it "should parse a complex-ish string" do
