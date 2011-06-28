@@ -80,6 +80,11 @@ describe "Wikistache" do
 
   end
 
+  it "should parse a string without data" do
+    str = "This is a [test]."
+    Wikistache.parse(str).should == "This is a Unknown."
+  end
+
   it "should parse a complex-ish string" do
     str = "Hello [Customer:First_Name] [Customer:Last_Name]! We at CNU appreciate how you still haven't paid back $[Loan:Amount_Due] on your loan. Hurry it up already, [Customer:First_Name]."
     Wikistache.parse(str, @data).should == "Hello Billy Joel! We at CNU appreciate how you still haven't paid back $100 on your loan. Hurry it up already, Billy."
