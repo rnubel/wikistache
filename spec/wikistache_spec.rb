@@ -38,6 +38,30 @@ describe "Lexer" do
   it "should not die on a syntax error" do
     lambda {Lexer.lex("This is a [Malformed string")}.should_not raise_error
   end
+
+  it "should lex a conditional with no nested tags" do
+    toks = Lexer.lex("This is a [If test][EndIf] conditional.")
+    toks.size.should == 3
+    toks[1].is_a?(ConditionalToken).should == true
+  end
+
+  it "should lex a conditional with a nested string" do
+    toks = Lexer.lex("This is a [If test]true[EndIf] conditional.")
+    toks.size.should == 3
+    toks[1].is_a?(ConditionalToken).should == true
+    # poor testing ahead
+    toks[1].parse({}).should == ""
+    toks[1].parse({:test => true}).should == "true"
+  end
+
+  it "should lex a nested conditional" do
+    toks = Lexer.lex("[If yes]Is [If no]that so [EndIf]that the case?[EndIf]")
+    toks.size.should == 1
+    # more poor testing. should examine internals
+    toks[0].parse({}).should == ""
+    toks[0].parse({:yes => true}).should =="Is that the case?"
+    toks[0].parse({:yes => true, :no => true}).should =="Is that so that the case?"
+  end
 end
 
 describe "Parser" do

@@ -38,17 +38,55 @@ class StringToken < Token
   end
 end
 
+# A conditional block, which nests other tokens.
+class ConditionalToken < Token
+  def initialize(str)
+    unless m = str.match(/If (.+)/) 
+      throw :invalid_conditional
+    end
+    @cond = VariableToken.new(m[1])     
+    @toks = []
+  end
+
+  def push(tok)
+    @toks.push(tok)
+  end
+
+  def parse(data = {})
+    if @cond.parse(data) == "true"
+      @toks.reduce("") do |output, tok|
+        output += tok.parse(data)
+      end  
+    else
+      ""
+    end
+  end
+
+end
+
 # Breaks a string into a list of Tokens. Note that this is *not* a general-purpose
 # lexer.
 class Lexer
   def self.lex(str)
     # Read in token after token until the string is consumed.
     toks = []
+    stack = [toks]
     pos = 0
     while m = str[pos .. str.length].match(/\[(.+?)\]/) do
-      toks.push(StringToken.new(str[pos ... pos + m.begin(0)])) unless m.begin(0) == 0
-      toks.push(VariableToken.new(m[1]))
+      # Push the leading static string unless it's empty.
+      stack.last.push(StringToken.new(str[pos ... pos + m.begin(0)])) unless m.begin(0) == 0
       
+      # Handle conditionals
+      if m[1].start_with?("If ") then
+          c = ConditionalToken.new(m[1])
+          stack.last.push(c)
+          stack.push(c) 
+      elsif m[1].start_with?("EndIf") then
+          stack.pop
+      else
+          stack.last.push(VariableToken.new(m[1]))
+      end
+  
       pos += m.end(0)
     end
     # Make sure to catch any trailing normal text.
